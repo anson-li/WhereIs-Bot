@@ -24,17 +24,24 @@ client.on("message", (message) => {
     sql.get(`SELECT * FROM locations WHERE name ="${locationName}"`).then(row => {
       if (!row) {
         sql.run(`INSERT INTO locations (name, location) VALUES (?, ?)`, [locationName, locationDir]);
+        message.reply(`Successfully added location '${locationName}' with '${locationDir}'`);
       } else {
-        sql.run(`UPDATE location SET location = ${locationDir} WHERE name = ${locationName}`);
+        sql.run(`UPDATE locations SET location = '${locationDir}' WHERE name = '${locationName}'`);
+        message.reply(`Successfully updated location '${locationName}' with '${locationDir}'`);
       }
+    }).catch(() => {
+      console.error();
+      sql.run(`CREATE TABLE IF NOT EXISTS locations (name TEXT, location TEXT)`).then(() => {
+        sql.run(`INSERT INTO locations (name, location) VALUES (?, ?)`, [locationName, locationDir]);
+      });
+      message.reply(`Successfully added location '${locationName}' with '${locationDir}'`);
     });
-    message.reply(`Successfully updated location '${locationName}' with '${locationDir}'`);
   }
 
   // !Where: allows users to generate a direct Google Maps link using a string
   if (message.content.startsWith("!Where")) {
     var commandText = message.content.replace('!Where', '').trim();
-    sql.get(`SELECT location FROM locations WHERE name ="${commandText}"`).then(row => {
+    sql.get(`SELECT location FROM locations WHERE name = '${commandText}'`).then(row => {
       if (row) {
         message.reply(`Found ${commandText} as ${row.location}`);
         generateEmbed(message, row.location);
