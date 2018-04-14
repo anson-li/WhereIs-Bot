@@ -16,7 +16,8 @@ client.on("message", (message) => {
   
   // !Found: allows users to save custom locations. Useful for difficult or confusing Pokestop locations.
   if (message.content.startsWith("!Found")) {
-    if (message.channel.isPrivate) return;
+    // Prevents people from mucking up the DB via DM's.
+    if (message.channel.type === "dm") return;
     var commandText = message.content.replace('!Found', '').trim();
     var locationName = commandText.split('"')[1];
     var locationDir = commandText.split('"')[3];
